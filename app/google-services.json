@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "542764267484",
+    "project_id": "fir-app-11b70",
+    "storage_bucket": "fir-app-11b70.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542764267484:android:7ebc85b5cf1c891e378119",
+        "android_client_info": {
+          "package_name": "com.claudiovitorio.firebaseapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "542764267484-kfc8otpu7b606jin23f7nb1o5i8062k3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.claudiovitorio.firebaseapp",
+            "certificate_hash": "6acad7632514282b79e9ea899e54aa49eb7646ef"
+          }
+        },
+        {
+          "client_id": "542764267484-hjo4gvqli6b1bg08qprl8jiqmvg1apja.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz9XfXaKoJCiJbLibjH0hZaoFR3okOq3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "542764267484-hjo4gvqli6b1bg08qprl8jiqmvg1apja.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
