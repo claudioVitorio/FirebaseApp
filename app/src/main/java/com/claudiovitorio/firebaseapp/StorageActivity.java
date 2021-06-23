@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.claudiovitorio.firebaseapp.model.Upload;
+import com.claudiovitorio.firebaseapp.util.LoadingDialog;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -69,6 +70,10 @@ public class StorageActivity extends AppCompatActivity {
     }
 
     private void uploadImagemUri() {
+        LoadingDialog dialog = new LoadingDialog(this,R.layout.custom_dialog);
+        dialog.startLoadingDialog();
+
+
         String tipo = getFileExtension(imageUri);
         //referencia do arquivo no firebase
         Date d = new Date();
@@ -88,13 +93,21 @@ public class StorageActivity extends AppCompatActivity {
                     taskSnapshot.getStorage().getDownloadUrl()
                             .addOnSuccessListener(uri -> {
                                 //inserir no database
-                                //criando referencia(datbase) do upload
+                                //criando referencia(database) do upload
                                 DatabaseReference refUpload = database.push();
                                 String id = refUpload.getKey();
 
                                 Upload upload = new Upload(id,nome,uri.toString());
-                                //Slavndo upload no db
-                                refUpload.setValue(upload);
+                                //Salvando upload no db
+                                refUpload.setValue(upload)
+                                .addOnSuccessListener(aVoid -> {
+                                  dialog.dismissDialog();
+                                  Toast.makeText(getApplicationContext(),"Upload feito com sucesso!",Toast.LENGTH_SHORT).show();
+                                  finish();
+
+
+
+                                });
 
 
                             });
