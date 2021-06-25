@@ -32,8 +32,8 @@
 
     <TextView
         android:id="@+id/main_text_user"
-        android:layout_width="42dp"
-        android:layout_height="23dp"
+        android:layout_width="72dp"
+        android:layout_height="46dp"
         android:layout_marginTop="32dp"
         android:text="Nome"
         app:layout_constraintBottom_toTopOf="@+id/main_btn_logout"
