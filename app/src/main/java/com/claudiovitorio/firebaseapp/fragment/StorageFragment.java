@@ -1,7 +1,4 @@
-package com.claudiovitorio.firebaseapp;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+package com.claudiovitorio.firebaseapp.fragment;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -10,13 +7,23 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.claudiovitorio.firebaseapp.R;
 import com.claudiovitorio.firebaseapp.model.Upload;
 import com.claudiovitorio.firebaseapp.util.LoadingDialog;
 import com.google.firebase.database.DatabaseReference;
@@ -27,51 +34,64 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
-public class StorageActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class StorageFragment extends Fragment {
+
     //referencia p/ FirebaseStorage
     private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private Button btnUpload,btnGaleria;
+    private Button btnUpload, btnGaleria;
     private ImageView imageView;
-    private Uri imageUri=null;
+    private Uri imageUri = null;
     private EditText editNome;
     // referencia p/ um nó RealtimeDB
     private DatabaseReference database = FirebaseDatabase.getInstance().getReference("Uploads");
+
+    public StorageFragment() {
+        // Required empty public constructor
+    }
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_storage);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
 
-        btnUpload = findViewById(R.id.storage_btn_upload);
-        imageView = findViewById(R.id.storage_image_cel);
-        btnGaleria = findViewById(R.id.storage_btn_galeria);
-        editNome = findViewById(R.id.storage_edit_nome);
+        View layout = inflater.inflate(R.layout.fragment_storage, container, false);
 
-        btnUpload.setOnClickListener(v ->{
-            if(editNome.getText().toString().isEmpty()){
-                Toast.makeText(this,"Digite um nome para Imagem",
+        btnUpload = layout.findViewById(R.id.storage_btn_upload);
+        imageView = layout.findViewById(R.id.storage_image_cel);
+        btnGaleria = layout.findViewById(R.id.storage_btn_galeria);
+        editNome = layout.findViewById(R.id.storage_edit_nome);
+
+
+        btnUpload.setOnClickListener(v -> {
+            if (editNome.getText().toString().isEmpty()) {
+                Toast.makeText(getActivity(), "Digite um nome para Imagem",
                         Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if(imageUri!=null){
+            if (imageUri != null) {
                 uploadImagemUri();
-            }else {
+            } else {
                 uploadImagemByte();
             }
         });
 
-        btnGaleria.setOnClickListener( v -> {
+        btnGaleria.setOnClickListener(v -> {
             Intent intent = new Intent();
             //intent implicita -> pegar um arquivo do celular
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
-            startActivityForResult(intent,112);
+            startActivityForResult(intent, 112);
         });
-
+        return layout;
     }
 
     private void uploadImagemUri() {
-        LoadingDialog dialog = new LoadingDialog(this,R.layout.custom_dialog);
+        LoadingDialog dialog = new LoadingDialog(getActivity(), R.layout.custom_dialog);
         dialog.startLoadingDialog();
 
 
@@ -81,11 +101,11 @@ public class StorageActivity extends AppCompatActivity {
         String nome = editNome.getText().toString();
         //Criando referencia da imagem no Storage
         StorageReference imagemRef = storage.getReference()
-                .child("imagens/"+nome+"-"+d.getTime()+"."+tipo);
+                .child("imagens/" + nome + "-" + d.getTime() + "." + tipo);
 
         imagemRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
-                    Toast.makeText(this,"Upload feito com sucesso",
+                    Toast.makeText(getActivity(), "Upload feito com sucesso",
                             Toast.LENGTH_SHORT).show();
 
                     //inserir dados da imagem no RealtimeDatabase
@@ -98,17 +118,20 @@ public class StorageActivity extends AppCompatActivity {
                                 DatabaseReference refUpload = database.push();
                                 String id = refUpload.getKey();
 
-                                Upload upload = new Upload(id,nome,uri.toString());
+                                Upload upload = new Upload(id, nome, uri.toString());
                                 //Salvando upload no db
                                 refUpload.setValue(upload)
-                                .addOnSuccessListener(aVoid -> {
-                                  dialog.dismissDialog();
-                                  Toast.makeText(getApplicationContext(),"Upload feito com sucesso!",Toast.LENGTH_SHORT).show();
-                                  finish();
+                                        .addOnSuccessListener(aVoid -> {
+                                            dialog.dismissDialog();
+                                            Toast.makeText(getActivity(), "Upload feito com sucesso!", Toast.LENGTH_SHORT).show();
+                                            NavController navController = Navigation
+                                                    .findNavController(getActivity(), R.id.nav_host_fragment);
+
+                                            //voltar p/ a fragment inicial
+                                            navController.navigateUp();
 
 
-
-                                });
+                                        });
 
 
                             });
@@ -117,21 +140,20 @@ public class StorageActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     e.printStackTrace();
                 });
-
     }
+
     //retornar o tipo(.png, .jpg) da imagem
     private String getFileExtension(Uri imageUri) {
-        ContentResolver cr = getContentResolver();
-        return MimeTypeMap.getSingleton()
-                .getExtensionFromMimeType(cr.getType(imageUri));
+        ContentResolver cr = getActivity().getContentResolver();
+        return MimeTypeMap.getSingleton().getExtensionFromMimeType(cr.getType(imageUri));
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.i("RESULT", "requestCode: "+ requestCode +
-                ",resultCode: "+ resultCode);
-        if(requestCode==112 && resultCode== Activity.RESULT_OK){
+        Log.i("RESULT", "requestCode: " + requestCode +
+                ",resultCode: " + resultCode);
+        if (requestCode == 112 && resultCode == Activity.RESULT_OK) {
             //caso o usuario selecionou uma imagem da galeria
 
             //endereco da imagem selecionada
@@ -140,16 +162,16 @@ public class StorageActivity extends AppCompatActivity {
         }
     }
 
-    public byte[] convertImage2Byte(ImageView imageView){
+    public byte[] convertImage2Byte(ImageView imageView) {
         //Converter ImageView -> byte[]
-        Bitmap bitmap = ( (BitmapDrawable) imageView.getDrawable() ).getBitmap();
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
         //objeto baos -> armazenar a imagem convertida
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         return baos.toByteArray();
     }
-    //fazer um upload de uma imagem convertida p/ bytes
-    public void uploadImagemByte(){
+
+    public void uploadImagemByte() {
         byte[] data = convertImage2Byte(imageView);
 
         //Criar uma referencia p/ imagem no Storage
@@ -159,9 +181,9 @@ public class StorageActivity extends AppCompatActivity {
         imagemRef.putBytes(data)
                 .addOnSuccessListener(taskSnapshot -> {
 
-                    Toast.makeText(this, "Upload feito com sucesso!",
+                    Toast.makeText(getActivity(), "Upload feito com sucesso!",
                             Toast.LENGTH_SHORT).show();
-                    Log.i("UPLOAD","Sucesso");
+                    Log.i("UPLOAD", "Sucesso");
 
                 })
                 .addOnFailureListener(e -> {
@@ -171,3 +193,4 @@ public class StorageActivity extends AppCompatActivity {
 
     }
 }
+
