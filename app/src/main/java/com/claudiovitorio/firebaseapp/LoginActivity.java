@@ -59,7 +59,7 @@ private FirebaseAuth auth = FirebaseAuth.getInstance();
          auth.signInWithEmailAndPassword(email,senha)
         .addOnSuccessListener(authResult -> {
             Toast.makeText(this,"Bem vindo", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            Intent intent = new Intent(getApplicationContext(), NavigationActivity.class);
             startActivity(intent);
         })
         //listener de falha

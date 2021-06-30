@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.claudiovitorio.firebaseapp.R;
 import com.claudiovitorio.firebaseapp.model.Upload;
 import com.claudiovitorio.firebaseapp.util.LoadingDialog;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -48,6 +49,8 @@ public class StorageFragment extends Fragment {
     // referencia p/ um nó RealtimeDB
     private DatabaseReference database = FirebaseDatabase.getInstance().getReference("Uploads");
 
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
+
     public StorageFragment() {
         // Required empty public constructor
     }
@@ -56,8 +59,10 @@ public class StorageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
+        database = FirebaseDatabase.getInstance().getReference("Uploads").child(auth.getUid());
+
+        // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_storage, container, false);
 
         btnUpload = layout.findViewById(R.id.storage_btn_upload);
