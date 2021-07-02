@@ -24,6 +24,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -93,55 +95,45 @@ public class MainFragment extends Fragment {
     }
 
     public void getUsersDatabase(){
-        usersRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listaContatos.clear();
+        //irá armazenar usuarios que já foram solicitados
+        Map<String, User> mapUsersReq = new HashMap<String, User>();
+       requestRef.child(userLogged.getId()).child("send")
+       .addValueEventListener(new ValueEventListener() {
+           @Override
+           public void onDataChange(@NonNull DataSnapshot snapshot) {
+               for (DataSnapshot u : snapshot.getChildren()){
+                   User user = u.getValue(User.class);
+                   // Adicionando usuario no HAshMap
+                   mapUsersReq.put(user.getId(), user);
+               }
+               //ler o nó usuarios
+               usersRef.addValueEventListener(new ValueEventListener() {
+                   @Override
+                   public void onDataChange(@NonNull DataSnapshot snapshot) {
+                       listaContatos.clear();
+                       for(DataSnapshot u : snapshot.getChildren()){
+                           User user = u.getValue(User.class);
+                           if (mapUsersReq.containsKey(user.getId())){
+                               user.setReceiveRequest(true);
+                           }
+                           if (!userLogged.equals(user)){
+                               listaContatos.add(user);
+                           }
+                       }
+                       userAdapter.notifyDataSetChanged();
+                   }
 
-                for (DataSnapshot filho : snapshot.getChildren()){
-                    User u = filho.getValue(User.class);
+                   @Override
+                   public void onCancelled(@NonNull DatabaseError error) {
 
-                    // comparar com o usuario logado
-                    if (!userLogged.equals(u)){
-                       /*if (cont%2==0){
-                           u.setReceiveRequest(true);
-                       }else{
-                           u.setReceiveRequest(false);
-                       }*/
-                       listaContatos.add(u);
+                   }
+               });
+           }
 
-                    }
-                }
+           @Override
+           public void onCancelled(@NonNull DatabaseError error) {
 
-                //verificar quais contatos já foram solicitados
-                requestRef
-                        .child(userLogged.getId())
-                        .child("send")
-                        .addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for (DataSnapshot no_filho : snapshot.getChildren() ){
-                                    User usuarioSolicitado = no_filho.getValue(User.class);
-                                    for (int i=0; i< listaContatos.size(); i++){
-                                        if (listaContatos.get(i).equals(usuarioSolicitado)){
-                                            listaContatos.get(i).setReceiveRequest(true);
-                                        }
-                                    }
-                                }
-                                userAdapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+           }
+       });
     }
 }
