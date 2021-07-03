@@ -21,6 +21,7 @@ import com.claudiovitorio.firebaseapp.LoginActivity;
 import com.claudiovitorio.firebaseapp.NavigationActivity;
 import com.claudiovitorio.firebaseapp.R;
 import com.claudiovitorio.firebaseapp.util.App;
+import com.claudiovitorio.firebaseapp.util.NotificationReceiver;
 
 import static com.claudiovitorio.firebaseapp.util.App.CHANNEL_1;
 
@@ -62,6 +63,18 @@ private NotificationManagerCompat notificationManagerCompat;
                     intent,
                     0
             );*/
+
+            //Criar um broadcast receiver ->
+            // - Ele deve ser ativado EXPLICITAMENTO!
+            // - não deve durar mais que 10 seg
+            Intent broadcastIntent = new Intent(getContext(), NotificationReceiver.class);
+
+            broadcastIntent.putExtra("toast",msg);
+
+            PendingIntent actionIntent = PendingIntent.getBroadcast(
+                    getContext(), 0,broadcastIntent,PendingIntent.FLAG_UPDATE_CURRENT
+            );
+
 
             //Criar a notificacao
             Notification notification = new NotificationCompat
